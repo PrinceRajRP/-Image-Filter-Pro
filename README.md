@@ -6,11 +6,14 @@ A simple, interactive web application built with **Streamlit** that allows users
 
 ## ✨ Features
 * **Original View:** See your uploaded image in its full glory.
+* <img width="597" height="594" alt="Screenshot 2026-02-07 111729" src="https://github.com/user-attachments/assets/a0bb6d9e-7a24-48bc-8d5b-31dec3ade862" />
+
 * **Grayscale:** Smooth conversion to 8-bit grey tones.
 * **Black & White:** Uses a custom mathematical threshold to create high-contrast "Manga style" art.
+* <img width="680" height="884" alt="image" src="https://github.com/user-attachments/assets/c703dc7f-ae99-49e5-b305-86c30b11b9db" />
+
 * **Interactive Slider:** Real-time adjustment of the B&W balance.
 * **One-Click Download:** Save your filtered masterpiece directly to your PC.
-
 ## 🚀 How to use
 1. Upload a `.jpg` or `.png` file.
 2. Use the **radio buttons** to switch between filters.
