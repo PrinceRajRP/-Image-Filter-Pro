@@ -1,28 +1,29 @@
-# -Image-Filter-Pro
-A web tool to convert color photos to Greyscale or high-contrast Black &amp; White
-# 📸 Image Filter Pro:https://fakerp-image-filter.streamlit.app/
+# 🎨 Image Artist
 
-A simple, interactive web application built with **Streamlit** that allows users to upload images and apply professional-grade filters.
+A sleek, interactive web application built with Python and Streamlit that transforms your photos into stunning visual art. Upload an image and instantly apply various computer vision filters, including a highly customizable, dynamic pencil sketch effect.
 
 ## ✨ Features
-* **Original View:** See your uploaded image in its full glory.
-* <img width="597" height="594" alt="Screenshot 2026-02-07 111729" src="https://github.com/user-attachments/assets/a0bb6d9e-7a24-48bc-8d5b-31dec3ade862" />
 
-* **Grayscale:** Smooth conversion to 8-bit grey tones.
-* <img width="672" height="788" alt="image" src="https://github.com/user-attachments/assets/a8381405-544d-46ad-9f63-20da3a7c1d0e" />
+* **Original View:** Inspect your raw uploaded photo in a responsive, full-width container.
+* <img width="1024" height="587" alt="image" src="https://github.com/user-attachments/assets/55e6967d-27e6-4d85-9771-f4ac552e0076" />
 
-* **Black & White:** Uses a custom mathematical threshold to create high-contrast "Manga style" art.
-* <img width="747" height="842" alt="image" src="https://github.com/user-attachments/assets/7c5a611d-8a77-40c6-9c30-a6b24558f2d3" />
+* **Grayscale:** Convert any colorful photo into a classic, elegant monochrome image.
+* <img width="1023" height="443" alt="image" src="https://github.com/user-attachments/assets/b7f948ab-73b5-4f2a-b493-c542eafd09d5" />
 
-* **Interactive Slider:** Real-time adjustment of the B&W balance.
-* **One-Click Download:** Save your filtered masterpiece directly to your PC.
-## 🚀 How to use
-1. Upload a `.jpg` or `.png` file.
-2. Use the **radio buttons** to switch between filters.
-3. If using Black & White, use the **slider** to tune the contrast.
-4. Click **Download Result** to save the image.
+* **Black & White:** Create high-contrast binary art. Includes an **adjustable threshold slider** (0-255) to perfectly balance the light and dark pixels.
+* <img width="1024" height="442" alt="image" src="https://github.com/user-attachments/assets/bc48917a-fd91-40c0-8b20-a18cfa36dbe0" />
 
-## 🛠️ Built With
-* [Python](https://www.python.org/)
-* [Streamlit](https://streamlit.io/) - The fastest way to build data apps.
-* [Pillow (PIL)](https://python-pillow.org/) - For image processing.
+* **Pro Pencil Sketch:** An advanced, math-driven sketch effect featuring:
+* <img width="1024" height="438" alt="image" src="https://github.com/user-attachments/assets/776dcff1-58cb-454b-b410-305b4676a2c3" />
+
+  * **Dynamic Line Boldness:** The "brush size" automatically scales based on a percentage of your image's width. This ensures the sketch looks consistent whether you upload a tiny icon or a massive 4K photograph!
+  * **Adjustable Sketch Intensity:** Control the underlying Gaussian Blur to make the pencil strokes look sharp and precise or soft and smudged.
+* **Side-by-Side Comparison:** Instantly see your original photo next to the processed masterpiece.
+* **One-Click Download:** Save your newly generated art locally as a high-quality PNG.
+
+## 🛠️ Tech Stack
+
+* **[Streamlit](https://streamlit.io/):** For the interactive web interface and responsive layout.
+* **[OpenCV](https://opencv.org/):** (`cv2`) For core image processing, matrix divisions, and Gaussian blurring.
+* **[NumPy](https://numpy.org/):** For fast mathematical operations on image arrays.
+* **[Pillow (PIL)](https://python-pillow.org/):** For reading, converting, and saving image files.
