@@ -9,8 +9,19 @@ from PIL import Image
 
 def render_pencil_sketch(img_arr, boldness, intensity):
     """Applies the pencil sketch transformation logic."""
+
+    shape = img_arr.shape
+    has_alpha = len(shape) == 3 and shape[2] == 4
+
+    if has_alpha:
+        color_part = img_arr[:, :, :3]
+        alpha_part = img_arr[:, :, 3:]
+    else:
+        color_part = img_arr
+        alpha_part = None
+
     # Convert to grayscale
-    gray = cv2.cvtColor(img_arr, cv2.COLOR_RGB2GRAY)
+    gray = cv2.cvtColor(color_part, cv2.COLOR_RGB2GRAY)
     # Invert the gray image (negative)
     inverted = 255 - gray
 
@@ -28,7 +39,80 @@ def render_pencil_sketch(img_arr, boldness, intensity):
     blurred = cv2.GaussianBlur(inverted, (thickness, thickness), intensity)
     # Divide original gray by the blurred negative to find edges
     sketch_arr = cv2.divide(gray, 255 - blurred, scale=255)
-    return sketch_arr
+    
+    if has_alpha:
+        return np.dstack((sketch_arr, alpha_part.reshape(sketch_arr.shape[0], sketch_arr.shape[1])))
+    else:
+        return sketch_arr
+
+
+def inverted(img_arr):
+
+    # 1. Safely get the dimensions of the image
+    shape = img_arr.shape
+    
+    if len(shape) == 3:
+        # Image has channels (height, width, channels)
+        height, width, channels = shape
+    else:
+        # Image is grayscale (height, width)
+        height, width = shape
+        channels = 1
+
+    if channels == 4:
+        color_channels = img_arr[:, :, :3]
+        inverted_colors = 255 - color_channels
+
+        alpha_channel = img_arr[:, :, 3:]
+
+        inverted_arr = np.dstack((inverted_colors, alpha_channel))
+
+    else:
+        inverted_arr = 255 - img_arr
+
+    return inverted_arr
+
+def apply_sepia(img_arr, spreadness):
+    """Applies the Vintage Sepia transformation logic"""
+
+    shape = img_arr.shape
+    has_alpha = len(shape) == 3 and shape[2] == 4
+
+    if has_alpha:
+        color_part = img_arr[:, :, :3]
+        alpha_part = img_arr[:, :, 3:]
+
+    else:
+        color_part = img_arr
+        alpha_part = None
+
+    # Convert Streamlit's RGB image to BGR for our matrix
+    bgr_img = cv2.cvtColor(color_part, cv2.COLOR_RGB2BGR)
+
+    # Our custom BGR Sepia Matrix
+    kernel = np.array([[0.131, 0.534, 0.272],
+                       [0.168, 0.686, 0.349],
+                       [0.189, 0.769, 0.393]])
+    
+    # Apply color transformation
+    sepia_img = cv2.transform(bgr_img, kernel)
+
+    # Add the vintage grain (mu=0, sigma=15)
+    noise = np.random.normal(0, spreadness, sepia_img.shape)
+    noisy_sepia = sepia_img + noise
+
+    # Clamp values and convert to uint8
+    final_bgr = np.clip(noisy_sepia, 0, 255).astype(np.uint8)
+
+    # Convert back to RGB for Streamlit to display properly
+    final_rgb = cv2.cvtColor(final_bgr, cv2.COLOR_BGR2RGB)
+
+    # 7. Reconstruct the image if it had transparency
+    if has_alpha:
+        # Stack the sepia colors with the original alpha
+        return np.dstack((final_rgb, alpha_part))
+    else:
+        return final_rgb
 
 
 st.title("🎨 Image Artist")
@@ -43,7 +127,7 @@ if uploaded_file is not None:
     st.sidebar.header("Filter Settings")
     option = st.sidebar.selectbox(
         "Choose a style:",
-        ["Original", "Grayscale", "Black & White", "Pencil Sketch"]
+        ["Original", "Grayscale", "Black & White", "Pencil Sketch", "Inverted", "Vintage Sepia"]
     )
     final_img = None
 
@@ -74,6 +158,17 @@ if uploaded_file is not None:
                 boldness = st.sidebar.slider("Thickness of pencil(%)", 0.1, 5.0, 1.0)
                 sketch_arr = render_pencil_sketch(img_arr, boldness, intensity)
                 final_img = Image.fromarray(sketch_arr)
+
+            elif option == "Inverted":
+                img_arr = np.array(img)
+                inverted_arr = inverted(img_arr)
+                final_img = Image.fromarray(inverted_arr)
+
+            elif option == "Vintage Sepia":
+                spreadness = st.sidebar.slider("Spreadness of grain effect", 0, 100, 15)
+                img_arr = np.array(img)
+                vintage_sepia_arr = apply_sepia(img_arr, spreadness)
+                final_img = Image.fromarray(vintage_sepia_arr)
 
             if final_img:
                 st.image(final_img, width="stretch")
