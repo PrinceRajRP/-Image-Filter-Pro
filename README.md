@@ -1,6 +1,6 @@
 # 🎨 Image Artist
 
-A sleek, interactive web application built with Python and Streamlit that transforms your photos into stunning visual art. Upload an image and instantly apply various computer vision filters, including a highly customizable, dynamic pencil sketch effect.
+A high-performance image processing application built with Streamlit, OpenCV, and NumPy. This suite provides professional-grade filters with a specific focus on Alpha-Channel Integrity, ensuring that transparent PNGs are processed without losing their background transparency or creating "black box" artifacts.
 
 ## ✨ Features
 
@@ -16,10 +16,34 @@ A sleek, interactive web application built with Python and Streamlit that transf
 * **Pro Pencil Sketch:** An advanced, math-driven sketch effect featuring:
 * <img width="1024" height="438" alt="image" src="https://github.com/user-attachments/assets/776dcff1-58cb-454b-b410-305b4676a2c3" />
 
-  * **Dynamic Line Boldness:** The "brush size" automatically scales based on a percentage of your image's width. This ensures the sketch looks consistent whether you upload a tiny icon or a massive 4K photograph!
-  * **Adjustable Sketch Intensity:** Control the underlying Gaussian Blur to make the pencil strokes look sharp and precise or soft and smudged.
-* **Side-by-Side Comparison:** Instantly see your original photo next to the processed masterpiece.
-* **One-Click Download:** Save your newly generated art locally as a high-quality PNG.
+* **Inverted:**	Flips color values while keeping the transparency layer untouched.
+* <img width="891" height="582" alt="image" src="https://github.com/user-attachments/assets/d5c44f5b-2b92-4525-9699-e28b32761012" />
+
+* **Vintage Sepia:** Warm, nostalgic tones with simulated film grain spread.
+* <img width="888" height="582" alt="image" src="https://github.com/user-attachments/assets/112fb828-a96a-4602-92c5-008e38a9c48e" />
+
+
+
+  🛡️ Smart Alpha Preservation
+Unlike standard filters that often strip transparency, this app uses custom slicing logic to isolate, protect, and reintegrate the Alpha layer (RGBA). Your transparent backgrounds stay transparent.
+
+✏️ Dynamic Pencil Sketch
+Dynamic Line Boldness: The "brush size" automatically scales based on a percentage of your image's width. This ensures the sketch looks consistent whether you upload a tiny icon or a massive 4K photograph!
+
+Adjustable Sketch Intensity: Control the underlying Gaussian Blur to make the pencil strokes look sharp and precise or soft and smudged.
+
+🎞️ True Vintage Transformation
+Experience an authentic old-school aesthetic using a specialized BGR color matrix combined with Gaussian noise to simulate realistic film grain and aged photography styles.
+
+⚙️ Robust Input Handling
+Universal Compatibility: Seamlessly processes RGB, RGBA, and 2D Grayscale images.
+
+Auto-Correction: Features automated shape detection and array reshaping to prevent common processing crashes.
+
+💻 User Experience
+Side-by-Side Comparison: Instantly see your original photo next to the processed masterpiece to fine-tune your settings.
+
+One-Click Download: Save your newly generated art locally as a high-quality, transparency-ready PNG.
 
 ## 🛠️ Tech Stack
 
