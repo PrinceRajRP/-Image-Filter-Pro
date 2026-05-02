@@ -146,6 +146,10 @@ uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file)
+    
+    # Normalize: convert grayscale/palette images to RGB (or RGBA to keep transparency)
+    if img.mode not in ("RGB", "RGBA"):
+        img = img.convert("RGB")
     img_arr = np.array(img)
 
     # Sidebar options
