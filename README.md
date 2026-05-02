@@ -1,10 +1,11 @@
 # 🎨 Image Artist
 
-A high-performance image processing application built with Streamlit, OpenCV, and NumPy. This suite provides professional-grade filters with a specific focus on Alpha-Channel Integrity, ensuring that transparent PNGs are processed without losing their background transparency or creating "black box" artifacts.
+A fast, interactive web application built with Python that lets users upload images and apply various artistic filters in real-time.
 
-## ✨ Features
+✨ Features
+Upload any image and instantly apply a variety of custom-built image processing filters. The app currently supports the following styles:
 
-* **Original View:** Inspect your raw uploaded photo in a responsive, full-width container.
+* Original: View the untouched base image.
 * <img width="1024" height="587" alt="image" src="https://github.com/user-attachments/assets/55e6967d-27e6-4d85-9771-f4ac552e0076" />
 
 * **Grayscale:** Convert any colorful photo into a classic, elegant monochrome image.
@@ -21,6 +22,9 @@ A high-performance image processing application built with Streamlit, OpenCV, an
 
 * **Vintage Sepia:** Warm, nostalgic tones with simulated film grain spread.
 * <img width="888" height="582" alt="image" src="https://github.com/user-attachments/assets/112fb828-a96a-4602-92c5-008e38a9c48e" />
+
+* **Pop-Art:** A highly stylized, retro posterization effect (includes adjustable intensity/step-size controls!).
+* <img width="1621" height="760" alt="image" src="https://github.com/user-attachments/assets/19256047-2235-4e0b-b57e-aafed6effd20" />
 
 
 
