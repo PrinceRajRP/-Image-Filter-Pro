@@ -115,6 +115,30 @@ def apply_sepia(img_arr, spreadness):
         return final_rgb
 
 
+def pop_art(img_arr, step_size):
+    """Applies the Pop-Art transformation logic"""
+    shape  = img_arr.shape
+    has_alpha = len(shape) == 3 and shape[2] == 4
+
+    if has_alpha:
+        color_part = img_arr[:, :, :3]
+        alpha_part = img_arr[:, :, 3:]
+    else:
+        color_part = img_arr
+        alpha_part =None
+
+    # Divide by a number to reduce then floor(remove numbers after decimal) them
+    bucket = color_part // step_size
+
+    # multiply by that number again
+    result_img = bucket * step_size
+
+    if has_alpha:
+        return np.dstack((result_img, alpha_part))
+    else:
+        return result_img
+
+
 st.title("🎨 Image Artist")
 st.write("Upload a photo and transform it into masterpeice!")
 
@@ -122,12 +146,13 @@ uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file)
+    img_arr = np.array(img)
 
     # Sidebar options
     st.sidebar.header("Filter Settings")
     option = st.sidebar.selectbox(
         "Choose a style:",
-        ["Original", "Grayscale", "Black & White", "Pencil Sketch", "Inverted", "Vintage Sepia"]
+        ["Original", "Grayscale", "Black & White", "Pencil Sketch", "Inverted", "Vintage Sepia", "Pop-Art"]
     )
     final_img = None
 
@@ -154,21 +179,23 @@ if uploaded_file is not None:
 
             elif option == "Pencil Sketch":
                 intensity = st.sidebar.slider("Sketch Intensity", 1, 25, 5)
-                img_arr = np.array(img)
                 boldness = st.sidebar.slider("Thickness of pencil(%)", 0.1, 5.0, 1.0)
                 sketch_arr = render_pencil_sketch(img_arr, boldness, intensity)
                 final_img = Image.fromarray(sketch_arr)
 
             elif option == "Inverted":
-                img_arr = np.array(img)
                 inverted_arr = inverted(img_arr)
                 final_img = Image.fromarray(inverted_arr)
 
             elif option == "Vintage Sepia":
                 spreadness = st.sidebar.slider("Spreadness of grain effect", 0, 100, 15)
-                img_arr = np.array(img)
                 vintage_sepia_arr = apply_sepia(img_arr, spreadness)
                 final_img = Image.fromarray(vintage_sepia_arr)
+
+            elif option == "Pop-Art":
+                step_size = st.sidebar.slider("Posterization Level", 2, 128, 64, 8)
+                pop_art_arr = pop_art(img_arr, step_size)
+                final_img = Image.fromarray(pop_art_arr)
 
             if final_img:
                 st.image(final_img, width="stretch")
