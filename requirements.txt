@@ -1,4 +1,7 @@
-streamlit
 numpy
 Pillow
+streamlit
+numpy
 opencv-python-headless
+requests
+python-dotenv
