@@ -1,8 +1,88 @@
+from dotenv import load_dotenv
 import streamlit as st
+from PIL import Image
 import numpy as np
+import requests
+import base64
 import cv2
 import io
-from PIL import Image
+import os
+
+load_dotenv()
+api_key = os.getenv("NVIDIA_API_KEY_90B")
+
+
+def get_ai_recommendation(img, goal, chat_history):
+
+    img_resize = img.resize((256, 256))
+    buf = io.BytesIO()
+    if img_resize.mode != "RGB":
+        img_resize = img_resize.convert("RGB")
+    img_resize.save(buf, format="JPEG")
+    img_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    messages = []
+    for exchange in chat_history:
+        messages.append({"role": "user", "content": exchange["user"]})
+        messages.append({"role": "assistant", "content": exchange["ai"]})
+
+    
+    content = [
+                    {
+                        "type": "text",
+                        "text": f"""The user says: "{goal}". 
+                        If this is a greeting or small talk, respond warmly and ask what they want to do with their image.
+                        If this relates to the image or filters, analyze the image and give a helpful recommendation with slider values.
+                        If this is off-topic, politely redirect them to image filters."""
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}
+                    }
+                ]
+
+    messages.append({"role": "user", "content": content})
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Accept": "application/json"
+    }
+
+    payload = {
+        "model": "meta/llama-3.2-90b-vision-instruct",
+        "messages": [
+            {
+                "role": "system",
+                "content": """You are a helpful image filter assistant for a photo editing app. Help users pick the best filter for their image.
+
+                You ONLY recommend filters from these 6 options:
+                1. Grayscale
+                2. Black & White (threshold: 0-255)
+                3. Pencil Sketch (intensity: 1-25, boldness: 0.1-5.0)
+                4. Inverted
+                5. Vintage Sepia (spreadness: 0-100)
+                6. Pop-Art (posterization level: 2-128)
+
+                Behavior rules:
+                - If the user greets you, greet them back and ask what effect they want on their image.
+                - If the user asks about the image, describe it briefly, then suggest one relevant filter with slider values.
+                - If the user asks something unrelated to image editing, politely say you can only assist with image filters and ask about their image goal.
+                - Never recommend any filter outside the 6 listed above.
+                - Always suggest specific slider values when recommending a filter.
+                - Reply in plain text only. No markdown, no bullet points, no headers. Keep it concise.
+                - You have access to the full conversation history above. Always use it to maintain context and refer back to previous messages when relevant."""
+            },
+            *messages
+        ],
+        "max_tokens": 200,
+        "temperature": 1,
+        
+    }
+
+    response = requests.post("https://integrate.api.nvidia.com/v1/chat/completions", headers=headers, json=payload)
+    print(response.json())
+    result = response.json()["choices"][0]["message"]["content"]
+    return result
 
 
 # --Processing Functions--
@@ -152,63 +232,90 @@ if uploaded_file is not None:
         img = img.convert("RGB")
     img_arr = np.array(img)
 
-    # Sidebar options
-    st.sidebar.header("Filter Settings")
-    option = st.sidebar.selectbox(
-        "Choose a style:",
-        ["Original", "Grayscale", "Black & White", "Pencil Sketch", "Inverted", "Vintage Sepia", "Pop-Art"]
-    )
+    # Initialize one list to store conversation
+    if "chat_history" not in st.session_state:
+        st.session_state["chat_history"] = []
+
+
+    tab1, tab2 = st.tabs(["🎨 Filter", "🤖 AI Chat"])
+
+    with tab1:
+        # Sidebar options
+        st.sidebar.header("Filter Settings")
+        option = st.sidebar.selectbox(
+            "Choose a style:",
+            ["Original", "Grayscale", "Black & White", "Pencil Sketch", "Inverted", "Vintage Sepia", "Pop-Art"]
+        )
+
+    with tab2:
+        # Display past messages
+        for exchange in st.session_state["chat_history"]:
+            with st.chat_message("user"):
+                st.write(exchange["user"])
+            with st.chat_message("assistant"):
+                st.write(exchange["ai"])
+
+
+        # Input bar
+        goal = st.chat_input("What's your goal for the image?")
+        if goal:
+            result = get_ai_recommendation(img, goal, st.session_state["chat_history"])
+            st.session_state["chat_history"].append({"user": goal, "ai": result})
+            st.rerun()
+    
+
     final_img = None
+    with tab1:
 
-    if option == "Original":
-        st.image(img, caption="Your Original Photo", width="stretch")
+        if option == "Original":
+            st.image(img, caption="Your Original Photo", width="stretch")
 
-    else:
-        # Create columns for Before and After
-        col1, col2 = st.columns(2)
+        else:
+            # Create columns for Before and After
+            col1, col2 = st.columns(2)
 
-        with col1:
-            st.header("Before")
-            st.image(img, width="stretch")
+            with col1:
+                st.header("Before")
+                st.image(img, width="stretch")
 
-        with col2:
-            st.header("After")
+            with col2:
+                st.header("After")
 
-            if option == "Grayscale":
-                final_img = img.convert('L')
+                if option == "Grayscale":
+                    final_img = img.convert('L')
 
-            elif option == "Black & White":
-                threshold = st.sidebar.slider("B&W Threshold", 0, 255, 128)
-                final_img = img.convert('L').point(lambda x: 0 if x < threshold else 255)
+                elif option == "Black & White":
+                    threshold = st.sidebar.slider("B&W Threshold", 0, 255, 128)
+                    final_img = img.convert('L').point(lambda x: 0 if x < threshold else 255)
 
-            elif option == "Pencil Sketch":
-                intensity = st.sidebar.slider("Sketch Intensity", 1, 25, 5)
-                boldness = st.sidebar.slider("Thickness of pencil(%)", 0.1, 5.0, 1.0)
-                sketch_arr = render_pencil_sketch(img_arr, boldness, intensity)
-                final_img = Image.fromarray(sketch_arr)
+                elif option == "Pencil Sketch":
+                    intensity = st.sidebar.slider("Sketch Intensity", 1, 25, 5)
+                    boldness = st.sidebar.slider("Thickness of pencil(%)", 0.1, 5.0, 1.0)
+                    sketch_arr = render_pencil_sketch(img_arr, boldness, intensity)
+                    final_img = Image.fromarray(sketch_arr)
 
-            elif option == "Inverted":
-                inverted_arr = inverted(img_arr)
-                final_img = Image.fromarray(inverted_arr)
+                elif option == "Inverted":
+                    inverted_arr = inverted(img_arr)
+                    final_img = Image.fromarray(inverted_arr)
 
-            elif option == "Vintage Sepia":
-                spreadness = st.sidebar.slider("Spreadness of grain effect", 0, 100, 15)
-                vintage_sepia_arr = apply_sepia(img_arr, spreadness)
-                final_img = Image.fromarray(vintage_sepia_arr)
+                elif option == "Vintage Sepia":
+                    spreadness = st.sidebar.slider("Spreadness of grain effect", 0, 100, 15)
+                    vintage_sepia_arr = apply_sepia(img_arr, spreadness)
+                    final_img = Image.fromarray(vintage_sepia_arr)
 
-            elif option == "Pop-Art":
-                step_size = st.sidebar.slider("Posterization Level", 2, 128, 64, 8)
-                pop_art_arr = pop_art(img_arr, step_size)
-                final_img = Image.fromarray(pop_art_arr)
+                elif option == "Pop-Art":
+                    step_size = st.sidebar.slider("Posterization Level", 2, 128, 64, 8)
+                    pop_art_arr = pop_art(img_arr, step_size)
+                    final_img = Image.fromarray(pop_art_arr)
 
-            if final_img:
-                st.image(final_img, width="stretch")
+                if final_img:
+                    st.image(final_img, width="stretch")
 
-                buf = io.BytesIO()
-                final_img.save(buf, format="PNG")
-                st.download_button(
-                    label="Download Result", 
-                    data=buf.getvalue(), 
-                    file_name=f"{option.lower()}_image.png", 
-                    mime="image/png"
-                )
+                    buf = io.BytesIO()
+                    final_img.save(buf, format="PNG")
+                    st.download_button(
+                        label="Download Result", 
+                        data=buf.getvalue(), 
+                        file_name=f"{option.lower()}_image.png", 
+                        mime="image/png"
+                    )
