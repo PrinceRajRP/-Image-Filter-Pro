@@ -14,7 +14,7 @@ api_key = os.getenv("NVIDIA_API_KEY_90B")
 
 def get_ai_recommendation(img, goal, chat_history):
 
-    img_resize = img.resize((256, 256))
+    img_resize = img.resize((512, 512))
     buf = io.BytesIO()
     if img_resize.mode != "RGB":
         img_resize = img_resize.convert("RGB")
